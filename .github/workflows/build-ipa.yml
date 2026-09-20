@@ -21,7 +21,7 @@ jobs:
             CODE_SIGNING_ALLOWED=YES \
             AD_HOC_CODE_SIGNING_ALLOWED=YES \
             ARCHS=arm64
-      - name: Pack IPA (excluding XC* frameworks so device-embedded ones are used)
+      - name: Pack IPA (excluding XC* frameworks and dSYM)
         run: |
           cd build/Build/Products/Debug-iphoneos
           mkdir Payload
@@ -29,8 +29,9 @@ jobs:
           rm -rf Payload/WebDriverAgentRunner-Runner.app/Frameworks/XC*.framework
           rm -rf Payload/WebDriverAgentRunner-Runner.app/Frameworks/Testing.framework
           rm -f  Payload/WebDriverAgentRunner-Runner.app/Frameworks/libXCTestSwiftSupport.dylib
+          rm -rf Payload/WebDriverAgentRunner-Runner.app/PlugIns/*.dSYM
           zip -qr WebDriverAgentRunner.ipa Payload
-          unzip -l WebDriverAgentRunner.ipa | grep -E "Frameworks/[^/]+$" | head
+          unzip -l WebDriverAgentRunner.ipa | grep -E "\.(dSYM|framework|xctest)/$" | head
       - uses: actions/upload-artifact@v4
         with:
           name: wda-ipa
