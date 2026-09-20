@@ -17,13 +17,16 @@ jobs:
             -destination 'generic/platform=iOS' \
             -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO ARCHS=arm64
-      - name: Pack IPA
+      - name: Pack IPA (excluding XC* frameworks so device-embedded ones are used)
         run: |
           cd build/Build/Products/Debug-iphoneos
           mkdir Payload
           cp -R WebDriverAgentRunner-Runner.app Payload/
+          rm -rf Payload/WebDriverAgentRunner-Runner.app/Frameworks/XC*.framework
+          rm -rf Payload/WebDriverAgentRunner-Runner.app/Frameworks/Testing.framework
+          rm -f  Payload/WebDriverAgentRunner-Runner.app/Frameworks/libXCTestSwiftSupport.dylib
           zip -qr WebDriverAgentRunner.ipa Payload
-          ls -la WebDriverAgentRunner.ipa
+          unzip -l WebDriverAgentRunner.ipa | grep -E "Frameworks/[^/]+$" | head
       - uses: actions/upload-artifact@v4
         with:
           name: wda-ipa
